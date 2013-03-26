@@ -1,0 +1,383 @@
+<!--
+    
+    Ant build script for TCIRC.  Running this script produces a .zip archive
+    with the following structure:
+
+    TCIRC-yyyy-MM-dd.zip
+    |~ TCIRC.war
+    |~ Source
+    |~~~ (The current source code of TCIRC and Gemini.)
+    
+-->
+<project default="build-zip" name="tcirc">
+
+  <!-- Give user a chance to override default properties by including a
+       build.properties file. -->
+  <property file="build.properties"/>
+
+  <!-- Import environment variables. -->
+  <property environment="Environment" />
+
+  <!-- Properties are immutable, and can only be set once.  So setting
+       default values for these properties after loading the build.properties
+       file will only set properties for which there was no value in
+       build.properties. -->
+  <property name="root"             value="."/>
+  <property name="TCIRC"            value="."/>
+  <property name="src"              value="${root}/Source"/>
+  <property name="build"            value="${root}/build"/>
+  <property name="jars"             value="${root}/Docroot/WEB-INF/lib/"/>
+  <property name="jars.extra"       value="${root}/Docroot/WEB-INF/extras/"/>
+  <property name="dist"             value="${root}/Docroot/WEB-INF/lib"/>
+  <property name="resin"            value="${Environment.RESIN_HOME}"/>
+  <property name="techempower.dir"  value="${root}/Submodules/TechEmpower"/>
+  <property name="extensions.dir"   value="${techempower.dir}/extensions/resin"/>
+  
+  <property name="Resin" value="${Environment.RESIN_HOME}" />
+  <property name="Resin.lib" value="${Environment.RESIN_HOME}/lib" />
+
+  <!-- Define some timestamps.  These are used to name the zip archive produced
+       by this script, and to assign a version string for static assets. -->
+  <tstamp>
+    <format property="TIMESTAMP_LONG" pattern="yyyy-MM-dd-hh-mm-ss" locale="en" />
+    <format property="TIMESTAMP_SHORT" pattern="yyyyMMddhhmm" locale="en" />
+  </tstamp>
+
+  <!-- ================================================================== -->
+  <!-- Compile the projects upon which this one depends.                  -->
+  <!-- ================================================================== -->
+  <target name="prepare-dependencies">
+    <ant dir="${techempower.dir}" target="dist" inheritAll="false"/>
+    <copy todir="${jars}" file="${techempower.dir}/dist/techempower.jar"/>
+    <ant dir="${extensions.dir}" target="dist" inheritAll="false"/>
+    <copy todir="${jars}" file="${extensions.dir}/dist/techempower-resin.jar"/>
+    <copy todir="${jars}">
+      <fileset dir="${techempower.dir}/lib">
+        <include name="**/*.jar" />
+      </fileset>
+    </copy>
+    <copy todir="${jars}">
+      <fileset dir="${extensions.dir}/lib">
+        <include name="**/*.jar" />
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Create the required destination directories.                       -->
+  <!-- ================================================================== -->
+  <target name="init" depends="prepare-dependencies" description="Creates build directory">
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+
+    <!-- Set the version for this build in ${ant.project.name}-Version.conf.  This will
+         later be copied into the .war file, overriding the placeholder
+         ${ant.project.name}-Version.conf file there for development. -->
+    <mkdir dir="temp/version" />
+    <echo message="StaticsVersion = ${TIMESTAMP_SHORT}" file="${build}/version/${ant.project.name}-Version.conf" append="false" />
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Compile the project.                                               -->
+  <!-- ================================================================== -->
+  <target name="compile" depends="init" description="Compiles Java source code">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}" includes="**/*" debug="on" encoding="UTF-8" includeAntRuntime="false">
+      <classpath>
+        <pathelement location="${resin}/lib/javaee-16.jar"/>
+        <fileset dir="${jars}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Compile LESS to CSS.                                               -->
+  <!-- ================================================================== -->
+  <target name="less" description="Compiles LESS to CSS">
+    <apply executable="java" parallel="false" force="true">
+      <fileset dir="${root}/Docroot/css" includes="**/*.less" />
+      <arg value="-jar" />
+      <arg value="${jars.extra}rhino-1.7.jar" />
+      <arg value="${jars.extra}less-rhino-1.1.5.js" />
+      <srcfile />
+      <mapper type="glob" from="*.less" to="${root}/Docroot/css/*.css" />
+      <targetfile />
+      <arg value="true" />
+    </apply>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Minify CSS, JavaScript, and JSPs.                                  -->
+  <!-- ================================================================== -->
+  <target name="minify" depends="minify-css, minify-js, minify-jsp, compile" description="Minifies CSS, JS, JSPs"></target>
+
+  <target name="minify-css" depends="minify-css.check, less, compile" unless="minify-css.exists" description="Minifies CSS">
+    <mkdir dir="${build}/min" />
+    <copy todir="${build}/min/css">
+      <fileset dir="${root}/Docroot/css" excludes="**/*.less" />
+    </copy>
+    <apply executable="java" parallel="false" force="true" dest="${build}/min/css/">
+      <fileset dir="${root}/Docroot/css" includes="**/*.css" />
+      <arg value="-jar" />
+      <arg value="${jars.extra}yuicompressor-2.4.4.jar" />
+      <arg value="--type" />
+      <arg value="css" />
+      <srcfile />
+      <arg value="-o" />
+      <mapper type="identity" />
+      <targetfile />
+    </apply>
+  </target>
+
+  <target name="minify-css.check" description="Checks if CSS is already minified">
+    <condition property="minify-css.exists">
+      <available file="${build}/min/css/" type="dir" />
+    </condition>
+  </target>
+
+  <target name="minify-js" depends="minify-js.check, compile" unless="minify-js.exists" description="Minifies JS">
+    <mkdir dir="${build}/min" />
+    <copy todir="${build}/min/js">
+      <fileset dir="${root}/Docroot/js" />
+    </copy>
+    <!-- Use yuicompressor -->
+    <!--
+        <apply executable="java" parallel="false" force="true" dest="${build}/min/js/">
+        <fileset dir="${root}/Docroot/js" includes="**/*.js" />
+        <arg value="-jar" />
+        <arg value="${jars.extra}yuicompressor-2.4.4.jar" />
+        <arg value="\-\-type" />
+        <arg value="js" />
+        <srcfile />
+        <arg value="-o" />
+        <mapper type="identity" />
+        <targetfile />
+        </apply>
+    -->
+
+    <!-- Use Closure Compiler -->
+    <apply executable="java" parallel="false" force="true" dest="temp/min/js/">
+      <fileset dir="${root}/Docroot/js" includes="**/*.js" />
+      <arg value="-jar" />
+      <arg value="${jars.extra}closure-compiler.jar" />
+      <arg value="--warning_level=QUIET" />
+      <arg value="--js" />
+      <srcfile />
+      <arg value="--js_output_file" />
+      <mapper type="identity" />
+      <targetfile />
+    </apply>
+  </target>
+
+  <target name="minify-js.check" description="Checks if JS is already minified">
+    <condition property="minify-js.exists">
+      <available file="${build}/min/js/" type="dir" />
+    </condition>
+  </target>
+
+  <target name="minify-jsp" depends="minify-jsp.check, compile" unless="minify-jsp.exists" description="Minifies JSPs">
+    <mkdir dir="${build}/min" />
+    <copy todir="${build}/min/jsp">
+      <fileset dir="${root}/Docroot/WEB-INF/jsp" />
+    </copy>
+    <apply executable="java" parallel="false" force="true" dest="${build}/min/jsp/">
+      <fileset dir="${root}/Docroot/WEB-INF/jsp" includes="**/*.jsp" />
+      <arg value="-jar" />
+      <arg value="${jars.extra}htmlcompressor-1.0.jar" />
+      <arg value="--preserve-server-script" />
+      <arg value="--type" />
+      <arg value="html" />
+      <srcfile />
+      <arg value="-o" />
+      <mapper type="identity" />
+      <targetfile />
+    </apply>
+  </target>
+
+  <target name="minify-jsp.check" description="Checks if JSPs are already minified">
+    <condition property="minify-jsp.exists">
+      <available file="${build}/min/jsp/" type="dir" />
+    </condition>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Generate Javadocs                                                  -->
+  <!-- ================================================================== -->
+  <target name="javadoc" depends="dist" description="Generates Javadocs">
+    <javadoc
+        access="public"
+        destdir="${root}/Javadoc"
+        author="true"
+        version="true"
+        use="true"
+        windowtitle="${ant.project.name}">
+      <classpath>
+        <pathelement location="${resin}javaee-16.jar"/>
+        <pathelement location="${resin}resin.jar"/>
+        <fileset dir="${jars}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+      <packageset dir="${src}" defaultexcludes="yes" />
+      <link href="http://javadocs.techempower.com/jdk17/api/"/>
+      <link href="http://javadocs.techempower.com/cte/"/>
+      <link href="http://docs.guava-libraries.googlecode.com/git-history/v12.0/javadoc/" />
+    </javadoc>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Delete Javadocs                                                    -->
+  <!-- ================================================================== -->
+  <target name="javadoc-clean" description="Delete Javadocs">
+    <delete verbose="false" includeemptydirs="true">
+      <fileset dir="Javadoc">
+        <include name="**/*"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Create the JAR file.                                               -->
+  <!-- ================================================================== -->
+  <target name="dist" depends="compile" description="Builds JAR file">
+    <jar jarfile="${dist}/${ant.project.name}.jar" basedir="${build}"></jar>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- A template for building WAR files for different environments       -->
+  <!-- ================================================================== -->
+  <target name="build-war" depends="dist,minify" description="Build WAR for deployment">
+    <war destfile="${ant.project.name}.war"
+         webxml="${root}/Docroot/WEB-INF/web.xml"
+         basedir="${root}/Docroot"
+         includes="images/**, html/**, WEB-INF/**, *.conf, *.resources, *.tld, *.txt, *.xml"
+         excludes="**/Thumbs.db, WEB-INF/tmp/**, WEB-INF/classes/**,WEB-INF/extras/**, WEB-INF/work/**, WEB-INF/web.xml">
+      <zipfileset dir="${build}/min/css" prefix="css" />
+      <zipfileset dir="${build}/min/js" prefix="js" />
+      <zipfileset dir="${build}/min/jsp" prefix="WEB-INF/jsp" />
+      <zipfileset dir="temp/version" prefix="WEB-INF" />
+    </war>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- A template for building WAR files for different environments       -->
+  <!-- ================================================================== -->
+  <target name="build-zip" depends="build-war" description="Build ZIP for archiving">
+    <zip destfile="${ant.project.name}-${TIMESTAMP_LONG}.zip">
+      <zipfileset dir="temp">
+        <include name="*.war" />
+      </zipfileset>
+      <zipfileset dir="${TCIRC}/Source" prefix="Source" />
+      <zipfileset dir="${techempower.dir}/Source" prefix="Source" />
+    </zip>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Cleans this project.                                               -->
+  <!-- ================================================================== -->
+  <target name="clean" description="Cleans the project">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete file="${dist}/${ant.project.name}.jar"/>
+    <delete file="${jars}/techempower.jar"/>
+    <!-- Delete test dirs -->
+    <delete dir="${tests.build}"/>
+    <delete dir="${tests.reports}"/>
+    <!-- Delete any .zip files in this dir -->
+    <delete verbose="true">
+      <fileset dir="${root}">
+        <include name="*.zip"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Cleans this project and projects upon which it depends.            -->
+  <!-- ================================================================== -->
+  <target name="clean-all">
+    <ant target="clean"/>
+    <ant dir="${techempower.dir}" target="clean-all" inheritAll="false"/>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- This tells ant where the jars that dbdeploy requires are.          -->
+  <!-- ================================================================== -->
+  <path id="mysql.classpath">
+    <fileset dir="Docroot/WEB-INF/lib/">
+      <include name="mysql*.jar"/>
+    </fileset>
+  </path>
+
+  <path id="dbdeploy.classpath">
+    <fileset dir="Docroot/WEB-INF/extras">
+      <include name="dbdeploy-ant-*.jar"/>
+    </fileset>
+    <path refid="mysql.classpath" />
+  </path>
+
+  <taskdef name="dbdeploy" classname="com.dbdeploy.AntTarget"
+           classpathref="dbdeploy.classpath"/>
+
+  <!-- ================================================================== -->
+  <!-- A template for dbdeploy to directly-accessible environments        -->
+  <!-- ================================================================== -->
+  <macrodef name="dbdeploy-direct">
+    <attribute name="target" />
+    <sequential>
+      <input message="This will deploy database changes to @{target}. Continue?"
+             validargs="y,n" addproperty="do.continue" />
+      <condition property="do.abortdbupdate">
+        <equals arg1="n" arg2="${do.continue}" />
+      </condition>
+      <fail if="do.abortdbupdate">Database update aborted by user.</fail>
+      <dbdeploy driver="${db.driver}" url="${db-@{target}.url}"
+                userid="${db-@{target}.user}" password="${db-@{target}.pass}"
+                dir="Database/Migration/" />
+    </sequential>
+  </macrodef>
+
+  <!-- ================================================================== -->
+  <!-- A template for dbdeploy to SSH-accessible environments             -->
+  <!-- Note: Put http://www.jcraft.com/jsch/ JAR file in your Ant lib     -->
+  <!-- TODO: Can jsch JAR be referenced directly w/out going in ant/lib?  -->
+  <!-- TODO: Combine this and dbdeploy-direct with conditional use of SSH -->
+  <!-- ================================================================== -->
+  <macrodef name="dbdeploy-ssh">
+    <attribute name="target" />
+    <attribute name="port" default="22" />
+    <attribute name="host" default="localhost" />
+    <sequential>
+      <input message="This will deploy database changes to @{target}. Continue?"
+             validargs="y,n" addproperty="do.continue" />
+      <condition property="do.abortdbupdate">
+        <equals arg1="n" arg2="${do.continue}" />
+      </condition>
+      <fail if="do.abortdbupdate">Database update aborted by user.</fail>
+      <sshsession host="${ssh-@{target}.host}" username="${ssh-@{target}.user}" password="${ssh-@{target}.pass}"
+                  port="@{port}" localtunnels="${ssh.lport}:@{host}:3306" trust="true" verbose="false">
+        <sequential>
+          <dbdeploy driver="${db.driver}" url="${db-@{target}.url}"
+                    userid="${db-@{target}.user}" password="${db-@{target}.pass}"
+                    dir="Database/Migration/" />
+        </sequential>
+      </sshsession>
+    </sequential>
+  </macrodef>
+
+  <!-- ================================================================== -->
+  <!-- Deploys db changes to QA database.                                 -->
+  <!-- ================================================================== -->
+  <target name="dbdeploy-qa" description="Deploys database changes to the QA environment">
+    <dbdeploy-direct target="qa" />
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Deploys db changes to prod.                                        -->
+  <!-- ================================================================== -->
+  <target name="dbdeploy-prod" description="Deploys database changes to prod">
+    <dbdeploy-ssh target="prod" />
+  </target>
+
+</project>

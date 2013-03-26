@@ -1,0 +1,13 @@
+Docroot/WEB-INF/classes/
+Docroot/WEB-INF/work/
+provider-connect-library/*
+Logs/
+jdbc-alerts.log
+Thumbs.db
+resin-data
+DataDumps/
+Thread Dumps/
+WebContent/
+.settings/
+build.properties
+bin/

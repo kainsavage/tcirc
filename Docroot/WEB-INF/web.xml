@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	<web-app version="2.4"
+	xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+	http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+-->
+
+<!--
+
+  TCIRC web.xml
+
+  This web.xml has been auto-generated with Resin 4 as an assumed
+  deployment target.  You may need to change several configuration
+  options below for deployment on other servers.  Also note that
+  not all configuration attributes specified below will apply to
+  your application.  See the reference material on the Wiki for
+  more information.
+
+-->
+<web-app xmlns:resin="urn:java:com.caucho.resin"
+         xmlns:gemini="urn:java:com.techempower.gemini">
+  
+  <!-- These lines will force assets to be served be resin -->
+  <servlet-mapping url-pattern="/css/*" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="/js/*" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="/images/*" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="/html/*" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="favicon.ico" servlet-name="resin-file" />
+  
+  <!-- Assets located in "/static/" are files that should be cached forever, by
+       convention. -->
+  <servlet-mapping url-pattern="/static/*" servlet-name="resin-file" />
+  <resin:Forward regexp="^/static/([\d|-]+)/(css|js|images|html)/(.*)$" target="/$2/$3">
+    <gemini:filter.ExpiresFilter>
+      <expirationDelta>31556926000</expirationDelta>
+    </gemini:filter.ExpiresFilter>
+  </resin:Forward>
+   
+  <!-- Disallow Resin 4 from compiling PHP or JSP pages directly. -->
+  <mime-mapping extension=".php" mime-type="text/plain" />
+  <mime-mapping extension=".jsp" mime-type="text/plain" />
+  <mime-mapping extension=".jspf" mime-type="text/plain" />
+  <mime-mapping extension=".jspx" mime-type="text/plain" />
+  <servlet-mapping url-pattern="*.php" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="*.jsp" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="*.jspf" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="*.jspx" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="/WEB-INF/*.jsp" servlet-name="resin-jsp" />
+  <servlet-mapping url-pattern="/WEB-INF/*.jspf" servlet-name="resin-jsp" />
+  <servlet-mapping url-pattern="/WEB-INF/*.jspx" servlet-name="resin-jspx" />
+
+  <!-- Disallow URL rewriting for sessions.-->
+  <session-config enable-url-rewriting="false" />
+
+  <!-- Use UTF-8 for everything. -->
+  <character-encoding>UTF-8</character-encoding>
+
+  <!-- Uncomment and modify the directives below to enable network
+       configuration, wherein each application instance contacts the
+       cluster master to receive its configuration. -->
+  <!--
+  <servlet>
+    <servlet-name>TC</servlet-name>
+    <init-param>
+      <param-name>ClusterClient.TransportClassname</param-name>
+      <param-value>com.techempower.gemini.cluster.transport.kryonet.KryoClientTransport</param-value>
+    </init-param>
+    <init-param>
+      <param-name>ClusterClient.Authentication.Key</param-name>
+      <param-value>shared-secret</param-value>
+    </init-param>
+    <init-param>
+      <param-name>Kryo.Client.TcpPort</param-name>
+      <param-value>54555</param-value>
+    </init-param>
+    <init-param>
+      <param-name>Kryo.Client.Host</param-name>
+      <param-value>localhost</param-value>
+    </init-param>
+  </servlet>
+  -->
+
+  <!-- Require HTTPS filter -->
+  <!-- This is disabled by default, but can be enabled by simply removing
+       the comment markers below. -->
+  <!--
+  <filter filter-name='RequireHttpsFilter' filter-class='com.techempower.gemini.filters.RequireHttpsFilter'>
+    <init-param>
+      <param-name>DebugEnabled</param-name>
+      <param-value>false</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping url-pattern='*' filter-name='RequireHttpsFilter' />
+  -->
+
+  <!-- Enable GZIP compression. -->
+  <filter filter-name="gzip" filter-class="com.caucho.filters.GzipFilter">
+    <init>
+      <use-vary>true</use-vary>
+    </init>
+  </filter>
+  <filter-mapping url-pattern='*' filter-name="gzip" />
+  
+  <!-- Resin 4 inbound URL rewriting. -->
+  <!--
+  <resin:Forward regexp="^/robots\.txt$" target="/?cmd=robots" />
+  <resin:Forward regexp="^/admin$" target="/?cmd=admin" />
+  <resin:Forward regexp="^/login$" target="/?cmd=login" />
+  <resin:Forward regexp="^/logout$" target="/?cmd=logout" />
+  -->
+
+  <!-- Tuckey URL Rewriting filter. -->
+  <!-- This is disabled by default, but can be enabled by simply removing
+       the comment markers below. -->
+  <!--
+  <filter filter-name='Rewrite' filter-class='org.tuckey.web.filters.urlrewrite.UrlRewriteFilter'>
+    <init-param>
+      <param-name>confReloadCheckInterval</param-name>
+      <param-value>5</param-value>
+    </init-param>
+    <init-param>
+      <param-name>logLevel</param-name>
+      <param-value>sysout:WARN</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping url-pattern='*' filter-name='Rewrite' />
+  -->
+
+</web-app>

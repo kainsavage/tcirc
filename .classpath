@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.generic.runtimeTarget/Resin 4.0 2"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/activation.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/jtds-1.2.5.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/urlrewrite-3.2.0.jar"/>
+	<classpathentry kind="src" path="Source"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/mysql-connector-java-5.1.21-bin.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/pircbot.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/lucene-analyzers-2.9.4.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/lucene-core-2.9.4.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/lucene-highlighter-2.9.4.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/lucene-snowball-2.9.4.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/dom.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/ics.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/im4java-1.1.0.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/jai_codec.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/jai_core.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/jangod-template.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/jaxp.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/kryonet-2.18-all.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/mail.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/NetComponents.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/resingzip.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/sax.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/smartupload.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/mustache-compiler-0.8.0.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/extras/htmlcompressor-1.1.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/techempower-resin.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/techempower.jar"/>
+	<classpathentry kind="output" path="Docroot/WEB-INF/classes"/>
+</classpath>
