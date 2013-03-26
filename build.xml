@@ -30,8 +30,6 @@
   <property name="jars.extra"       value="${root}/Docroot/WEB-INF/extras/"/>
   <property name="dist"             value="${root}/Docroot/WEB-INF/lib"/>
   <property name="resin"            value="${Environment.RESIN_HOME}"/>
-  <property name="techempower.dir"  value="${root}/Submodules/TechEmpower"/>
-  <property name="extensions.dir"   value="${techempower.dir}/extensions/resin"/>
   
   <property name="Resin" value="${Environment.RESIN_HOME}" />
   <property name="Resin.lib" value="${Environment.RESIN_HOME}/lib" />
@@ -47,20 +45,6 @@
   <!-- Compile the projects upon which this one depends.                  -->
   <!-- ================================================================== -->
   <target name="prepare-dependencies">
-    <ant dir="${techempower.dir}" target="dist" inheritAll="false"/>
-    <copy todir="${jars}" file="${techempower.dir}/dist/techempower.jar"/>
-    <ant dir="${extensions.dir}" target="dist" inheritAll="false"/>
-    <copy todir="${jars}" file="${extensions.dir}/dist/techempower-resin.jar"/>
-    <copy todir="${jars}">
-      <fileset dir="${techempower.dir}/lib">
-        <include name="**/*.jar" />
-      </fileset>
-    </copy>
-    <copy todir="${jars}">
-      <fileset dir="${extensions.dir}/lib">
-        <include name="**/*.jar" />
-      </fileset>
-    </copy>
   </target>
 
   <!-- ================================================================== -->
@@ -185,7 +169,7 @@
     <apply executable="java" parallel="false" force="true" dest="${build}/min/jsp/">
       <fileset dir="${root}/Docroot/WEB-INF/jsp" includes="**/*.jsp" />
       <arg value="-jar" />
-      <arg value="${jars.extra}htmlcompressor-1.0.jar" />
+      <arg value="${jars.extra}htmlcompressor-1.1.jar" />
       <arg value="--preserve-server-script" />
       <arg value="--type" />
       <arg value="html" />
@@ -270,7 +254,6 @@
         <include name="*.war" />
       </zipfileset>
       <zipfileset dir="${TCIRC}/Source" prefix="Source" />
-      <zipfileset dir="${techempower.dir}/Source" prefix="Source" />
     </zip>
   </target>
 
@@ -281,7 +264,6 @@
     <!-- Delete the ${build} and ${dist} directory trees -->
     <delete dir="${build}"/>
     <delete file="${dist}/${ant.project.name}.jar"/>
-    <delete file="${jars}/techempower.jar"/>
     <!-- Delete test dirs -->
     <delete dir="${tests.build}"/>
     <delete dir="${tests.reports}"/>
@@ -298,7 +280,6 @@
   <!-- ================================================================== -->
   <target name="clean-all">
     <ant target="clean"/>
-    <ant dir="${techempower.dir}" target="clean-all" inheritAll="false"/>
   </target>
 
   <!-- ================================================================== -->

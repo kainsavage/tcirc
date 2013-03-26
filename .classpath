@@ -29,5 +29,6 @@
 	<classpathentry kind="lib" path="Docroot/WEB-INF/extras/htmlcompressor-1.1.jar"/>
 	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/techempower-resin.jar"/>
 	<classpathentry kind="lib" path="Docroot/WEB-INF/lib/techempower.jar"/>
+	<classpathentry kind="lib" path="Docroot/WEB-INF/extras/closure-compiler.jar"/>
 	<classpathentry kind="output" path="Docroot/WEB-INF/classes"/>
 </classpath>
