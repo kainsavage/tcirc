@@ -13,9 +13,11 @@ import net.teamclerks.tcirc.TCContext;
 import net.teamclerks.tcirc.TCHandler;
 import net.teamclerks.tcirc.home.forms.HomeForm;
 
-import com.techempower.gemini.annotation.CMD;
+import com.techempower.gemini.GeminiHelper;
 import com.techempower.gemini.annotation.Default;
-import com.techempower.gemini.annotation.response.JSP;
+import com.techempower.gemini.annotation.URL;
+import com.techempower.gemini.form.FormValidation;
+import com.techempower.js.JavaScriptWriter;
 import com.techempower.log.ComponentLog;
 
 /**
@@ -29,6 +31,9 @@ import com.techempower.log.ComponentLog;
 public class HomeHandler
      extends TCHandler
 {
+  private final JavaScriptWriter validationWriter = JavaScriptWriter.custom()
+      .addVisitorFactory(FormValidation.class, HomeForm.VisitorFactory())
+      .build();
 	private final TCApplication app;
   private final ComponentLog log;
 
@@ -45,25 +50,34 @@ public class HomeHandler
   }
 
   /**
-   * Renders the home page. 
-   * 
    * This is also set as the default handler.
    */
   @Default
-  @CMD("home")
-  @JSP("home.jsp")
-  public boolean handleHome(TCContext context)
+  public boolean handleDefault(TCContext context)
+  {
+  	return context.redirect("/html/home.html");
+  }
+  
+  @URL("api/connect")
+  public boolean handleConnect(TCContext context)
   {
   	HomeForm form = new HomeForm(this.app);
+    form.setValues(context);
+    FormValidation validation = form.validate(context);
   	
-  	if (form.hasBeenValidlySubmitted(context))
-  	{
-			return context.redirect("/chat");
-  	}
-  	
-  	context.putDelivery("form", form);
-  	
-    return true;
+		if (validation.hasErrors())
+		{
+			// This has to be fixed
+			return GeminiHelper.sendJson(context, validation, validationWriter);
+		}
+		else
+		{
+			context.putSessionValue("channel", form.getStringValue("channel"));
+			context.putSessionValue("name", form.getStringValue("name"));
+			context.putSessionValue("server", form.getStringValue("server"));
+			
+			return GeminiHelper.sendJson(context, "success","/html/chat.html");
+		}
   }
 
 }   // End HomeHandler.

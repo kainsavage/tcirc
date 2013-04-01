@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+  <!--[if lt IE 9]><script src="/js/html5.js"></script><![endif]-->
+  <link rel="stylesheet" href="/css/tc.css" />
+  
+  <title>TCIRC - Home</title>
+  
+  <!-- 
+    This is THE template; there is only ONE template per page by design.
+    For our system, the 'base' template is used, has the header and footer
+    in it, and expects a partial identified by 'content' to be provided by
+    the templater. 
+    -->
+  <script type="text/template" id="template" src="/templates/base.html"></script>
+  
+  <!-- 
+    This content block is expected by the base template. This is the meat
+    and potatoes of the template system.
+   -->
+  <script type="text/partial" id="content" src="/partials/home/content.html"></script>
+  
+  <!-- 
+    These are error partials specifics to this template. They are included on the 
+    content partial. The directory structure makes it simple to understand the
+    context in which each partial is used. All the home-specific partials are in
+    directories labeled 'home'.
+   -->
+  <script type="text/partial" id="nicknameError" src="/partials/home/errors/nickname.html"></script>
+  <script type="text/partial" id="serverError" src="/partials/home/errors/server.html"></script>
+  <script type="text/partial" id="channelError" src="/partials/home/errors/channel.html"></script>
+  
+  <script src="/js/jquery.js"></script>
+  <script src="https://raw.github.com/wycats/handlebars.js/1.0.0-rc.3/dist/handlebars.js"></script>
+  
+  <script src="/js/tc.js"></script>
+  <script src="/js/tc.templater.js"></script>
+  <script src="/js/tc.forms.js"></script>
+  
+  <script type="text/javascript" src="/js/templates/tc.home.js"></script>
+</head>
+<body></body>

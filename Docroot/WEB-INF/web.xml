@@ -27,6 +27,8 @@
   <servlet-mapping url-pattern="/js/*" servlet-name="resin-file" />
   <servlet-mapping url-pattern="/images/*" servlet-name="resin-file" />
   <servlet-mapping url-pattern="/html/*" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="/templates/*" servlet-name="resin-file" />
+  <servlet-mapping url-pattern="/partials/*" servlet-name="resin-file" />
   <servlet-mapping url-pattern="favicon.ico" servlet-name="resin-file" />
   
   <!-- Assets located in "/static/" are files that should be cached forever, by

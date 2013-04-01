@@ -1,20 +1,52 @@
 package net.teamclerks.tcirc.home.forms;
 
+import java.util.Map;
+
+import com.google.common.collect.Maps;
 import com.techempower.gemini.Context;
 import com.techempower.gemini.GeminiApplication;
 import com.techempower.gemini.form.Form;
-import com.techempower.gemini.form.FormSubmitButton;
+import com.techempower.gemini.form.FormElement;
+import com.techempower.gemini.form.FormSingleValidation;
 import com.techempower.gemini.form.FormTextField;
+import com.techempower.gemini.form.FormValidation;
 import com.techempower.gemini.form.validator.AlphanumericValidator;
+import com.techempower.js.Visitor;
+import com.techempower.js.VisitorFactory;
+import com.techempower.js.Visitors;
 
 public final class HomeForm extends Form
 {
+	public static final VisitorFactory<FormValidation> VisitorFactory()
+	{
+		return new VisitorFactory<FormValidation>()
+		{
+		  @Override
+		  public Visitor visitor(FormValidation result)
+		  {
+		  	Map<String,String> errorsAndValues = Maps.newHashMap();
+		  	
+		  	for(FormSingleValidation val : result.getValidations())
+		  	{
+		  		if (val.isError())
+		  		{
+		  			errorsAndValues.put(val.getElement().getName() + "Error", val.getInstruction());
+		  		}
+		  	}
+		  	
+		  	for(FormElement element : result.getForm().getElementsAsList())
+		  	{
+		  		errorsAndValues.put(element.getName(), element.getEscapedValue());
+		  	}
+		  	
+		    return Visitors.forMaps().visitor(errorsAndValues);
+		  }
+		};
+	}
+	
 	public HomeForm(GeminiApplication application)
 	{
 		super(application);
-		
-		this.setAction("/home");
-		this.setMethod(Form.POST);
 		
 		FormTextField name = new FormTextField("name");
 		name.setDisplayName("Nickname");
@@ -37,9 +69,6 @@ public final class HomeForm extends Form
 		channel.setMaxLength(255);
 		channel.setHelpText("The channel to which you wish to join once connected.");
 		this.addElement(channel);
-		
-		FormSubmitButton submit = new FormSubmitButton("submit", "Submit");
-		this.addElement(submit);
 	}
 	
 	/**

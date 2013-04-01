@@ -60,7 +60,7 @@ public class IrcClient
 
 	  Map<String,String> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("message", "<font class='connect'>*** You have connected to the server.</font>");
+	  data.put("message", "You have connected to the server.");
 	  
 	  this.log.debug("onConnect call.");
 	  
@@ -74,7 +74,7 @@ public class IrcClient
 
 	  Map<String,String> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("message", "<font class='disconnect'>*** You have disconnected from the server.</font>");
+	  data.put("message", "You have disconnected from the server.");
 	  
 	  this.log.debug("onDisconnect call.");
 	  
@@ -105,7 +105,7 @@ public class IrcClient
 	  }
 	  
 	  Map<String,List<String>> data = new HashMap<>();
-	  data.put("nicks", nicks);
+	  data.put("users", nicks);
 	  
 	  this.log.debug("onUserList call.");
 	  
@@ -126,11 +126,7 @@ public class IrcClient
 	  data.put("hostname", hostname);
 	  data.put("message", ChatProcessor.toWebFriendlyString(message));
 	  
-	  if (StringHelper.equalsIgnoreCase(sender, this.chatProcessor.getName()))
-	  {
-	  	data.put("who", "me");
-	  }
-	  else
+	  if (!StringHelper.equalsIgnoreCase(sender, this.chatProcessor.getName()))
 	  {
 	  	data.put("notify", "true");
 	  }
@@ -145,6 +141,22 @@ public class IrcClient
       String message)
   {
 	  super.onPrivateMessage(sender, login, hostname, message);
+
+	  Map<String,String> data = new HashMap<>();
+	  data.put("time", TIMESTAMP.format(new Date()));
+	  data.put("sender", sender);
+	  data.put("login", login);
+	  data.put("hostname", hostname);
+	  data.put("message", ChatProcessor.toWebFriendlyString(message));
+	  
+	  if (!StringHelper.equalsIgnoreCase(sender, this.chatProcessor.getName()))
+	  {
+	  	data.put("notify", "true");
+	  }
+	  
+	  this.log.debug("onPrivateMessage call.");
+	  
+	  this.chatProcessor.sendJson("privateMessage", data);
   }
 
 	@Override
@@ -155,7 +167,7 @@ public class IrcClient
 
 	  Map<String,String> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("message", "<font class='action'>" + sender + " " + action + "</font>");
+	  data.put("message", action);
 	  
 	  this.log.debug("onAction call.");
 	  
@@ -175,11 +187,11 @@ public class IrcClient
   {
 	  super.onJoin(aChannel, sender, login, hostname);
 
-	  Map<String,String> data = new HashMap<>();
+	  Map<String,Object> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("message", "<font class='connect'>*** " + sender + " has joined " + aChannel + "</font>");
+	  data.put("sender",  sender);
 	  data.put("channel", aChannel);
-	  data.put("joiner", sender);
+	  data.put("users", new String[]{ sender });
 	  
 	  this.log.debug("onJoin call.");
 	  
@@ -194,9 +206,8 @@ public class IrcClient
 
 	  Map<String,String> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("message", "<font class='disconnect'>*** " + sender + " has left " + aChannel + "</font>");
 	  data.put("channel", aChannel);
-	  data.put("parted", sender);
+	  data.put("sender", sender);
 	  
 	  this.log.debug("onPart call.");
 	  
@@ -213,7 +224,6 @@ public class IrcClient
 	  data.put("time", TIMESTAMP.format(new Date()));
 	  data.put("oldNick", oldNick);
 	  data.put("newNick", newNick);
-	  data.put("message", "<font class='servertext'>*** </font><font class='oldNick'>" + oldNick + "</font> <font class='servertext'>is now known as </font><font class='newNick'>" + newNick + "</font>");
 	  
 	  this.log.debug("onNickChange call.");
 	  
@@ -236,7 +246,7 @@ public class IrcClient
 	  
 	  Map<String,String> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("message", "<font class='disconnect'>*** " + sourceNick + " has quit (" + StringHelper.emptyDefault(reason, "No reason") + ")</font>");
+	  data.put("reason", StringHelper.emptyDefault(reason, "No reason"));
 	  data.put("sourceNick", sourceNick);
 	  
 	  this.log.debug("onPart call.");

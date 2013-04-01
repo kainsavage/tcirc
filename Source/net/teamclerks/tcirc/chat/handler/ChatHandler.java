@@ -7,11 +7,11 @@ import net.teamclerks.tcirc.TCContext;
 import net.teamclerks.tcirc.TCHandler;
 import net.teamclerks.tcirc.chat.ChatProcessor;
 
-import com.techempower.gemini.annotation.CMD;
-import com.techempower.gemini.annotation.response.JSP;
+import com.google.common.collect.ImmutableMap;
+import com.techempower.gemini.GeminiHelper;
+import com.techempower.gemini.annotation.URL;
 import com.techempower.gemini.websocket.ResinAdapter;
 import com.techempower.gemini.websocket.WebsocketAdapter;
-import com.techempower.helper.StringHelper;
 import com.techempower.log.ComponentLog;
 
 public class ChatHandler extends TCHandler
@@ -28,21 +28,18 @@ public class ChatHandler extends TCHandler
 		this.log = this.app.getLog("ChHd");
 		this.adapter = new ResinAdapter();
 	}
-
-	@CMD("chat")
-	@JSP("chat/chat.jsp")
-	public boolean handleChat(TCContext context)
+	
+	@URL("api/chat/data")
+	public boolean handleChatData(TCContext context)
 	{
-		if (StringHelper.isEmpty((String)context.getSessionValue("channel"),
-				(String)context.getSessionValue("server"),
-				(String)context.getSessionValue("name")))
-		{
-			return context.redirect("/home");
-		}
-		return true;
+		return GeminiHelper.sendJson(context, ImmutableMap.of(
+				"channel", context.getSessionValue("channel"),
+				"server",  context.getSessionValue("server"),
+				"name",    context.getSessionValue("name")
+				));
 	}
 	
-	@CMD("chatting")
+	@URL("api/chatting")
 	public boolean handleChatting(TCContext context)
 	{
 		try

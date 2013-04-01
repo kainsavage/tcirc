@@ -98,6 +98,10 @@
   border-bottom: 1px solid rgb(233,233,233);
 }
 
+#chat .private {
+	color: rgb(204, 204, 204);
+}
+
 .connect {
   color: rgb(0,136,0);
 }

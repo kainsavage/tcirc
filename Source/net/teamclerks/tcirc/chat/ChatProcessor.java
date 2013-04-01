@@ -154,6 +154,14 @@ public class ChatProcessor
 		  		}
 		  	}
 		  	this.client.sendMessage(toNick, message.toString());
+			  data.put("time", IrcClient.TIMESTAMP.format(new Date()));
+			  data.put("message", ChatProcessor.toWebFriendlyString(message.toString()));
+			  data.put("sender", this.name);
+			  data.put("channel", this.channel);
+			  data.put("hostname", this.server);
+			  data.put("toNick", toNick);
+			  
+			  this.sendJson("myPrivateMessage", data);
 		  }
 		  else
 		  {
@@ -163,7 +171,6 @@ public class ChatProcessor
 			  data.put("sender", this.name);
 			  data.put("channel", this.channel);
 			  data.put("hostname", this.server);
-		  	data.put("who", "me");
 			  
 			  this.sendJson("myMessage", data);
 		  }
