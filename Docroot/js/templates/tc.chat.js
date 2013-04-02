@@ -11,7 +11,6 @@ $(function(){
       distributor = null,
       webSocket = null,
       startingTitle = document.title,
-      userList = [],
 
       // -------------------------------------------- //
       //                Private methods               //
@@ -168,8 +167,6 @@ $(function(){
         
         renderChat("join", data);
         
-        userList[userList.length] = data.joiner;
-        
         $("#chatters ul").append(Handlebars.partials['userlist'](data));
         
         if (data.notify && !focused) {
@@ -182,7 +179,6 @@ $(function(){
        * @param data
        */
       onParted = function (data) {
-        var i, tempUserList = [];
         
         renderChat("part", data);
         
@@ -190,12 +186,6 @@ $(function(){
           document.title = "[New Message]";
         }
         
-        for(i = 0; i < userList.length; i++) {
-          if(userList[i] !== data.parted) {
-            tempUserList[length] = userList[i];
-          }
-          userList = tempUserList;
-        }
         $("#chatters ul li").each(function(index) {
           if($(this).text() === data.parted) {
             $(this).remove();
@@ -210,7 +200,6 @@ $(function(){
        * @param data
        */
       onQuit = function (data) {
-        var i, tempUserList = [];
         
         renderChat("quit", data);
         
@@ -218,12 +207,6 @@ $(function(){
           document.title = "[New Message]";
         }
         
-        for(i = 0; i < userList.length; i++) {
-          if(userList[i] !== data.sourceNick) {
-            tempUserList[length] = userList[i];
-          }
-          userList = tempUserList;
-        }
         $("#chatters ul li").each(function(index) {
           if($(this).text() === data.sourceNick) {
             $(this).remove();
@@ -237,10 +220,9 @@ $(function(){
        * @param data
        */
       onUserlist = function (data) {
-        userList = data.users;
-        $("#chatters ul").empty();
         
         $("#chatters ul").html(Handlebars.partials['userlist'](data));
+        
       },
   
       /**
@@ -248,7 +230,6 @@ $(function(){
        * @param data
        */
       onNickChange = function (data) {
-        var i;
         
         renderChat("nickChange", data);
         
@@ -256,12 +237,6 @@ $(function(){
           document.title = "[New Message]";
         }
         
-        for(i = 0; i < userList.length; i++) {
-          if(userList[i] === data.oldNick) {
-            userList[i] = data.newNick;
-            break;
-          }
-        }
         $("#chatters ul li").each(function(index) {
           if($(this).text() === data.oldNick) {
             $(this).text(data.newNick);
@@ -320,16 +295,13 @@ $(function(){
             currentWord = currentWord.toLowerCase();
 
             if(currentWord.trim() !== '') {
-              for(i = 0; i < userList.length; i++) {
-                currentUser = userList[i];
-                currentUser = currentUser.toLowerCase();
-                
-                if(currentUser.indexOf(currentWord) === 0) {
-                  chatInput[chatInput.length - 1] = userList[i];
+              $("#chatters ul li").each(function() {
+                if($(this).html().toLowerCase().indexOf(currentWord) === 0) {
+                  chatInput[chatInput.length - 1] = $(this).html();
                   $("#chatInput").val(chatInput.join(" "));
                   return;
                 }
-              } 
+              });
             }
           }
         });
