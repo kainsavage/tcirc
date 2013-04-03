@@ -2,7 +2,7 @@
  * This is the controller code for the home page.
  */
 $(function(){
-  var data = { headerName: "TCIRC Home", h2Name: "TCIRC" };
+  var data = { headerName: "TCIRC Home" };
   
   /**
    * afterRendering is a callback from the render method on the tc.Templater.

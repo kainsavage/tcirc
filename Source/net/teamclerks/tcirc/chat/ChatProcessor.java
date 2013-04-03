@@ -122,9 +122,10 @@ public class ChatProcessor
 		  	this.client.sendAction(this.channel, action);
 		  	
 			  data.put("time", IrcClient.TIMESTAMP.format(new Date()));
-			  data.put("message", "<font class='action'>" + this.name + " " + action + "</font>");
+			  data.put("sender", this.name);
+			  data.put("action", ChatProcessor.toWebFriendlyString(action));
 			  
-			  this.sendJson("myMessage", data);
+			  this.sendJson("action", data);
 		  }
 		  else if(StringHelper.startsWithIgnoreCase(inString, "/join "))
 		  {

@@ -33,9 +33,10 @@ public class ChatHandler extends TCHandler
 	public boolean handleChatData(TCContext context)
 	{
 		return GeminiHelper.sendJson(context, ImmutableMap.of(
-				"channel", context.getSessionValue("channel"),
-				"server",  context.getSessionValue("server"),
-				"name",    context.getSessionValue("name")
+				"channel",    context.getSessionValue("channel"),
+				"server",     context.getSessionValue("server"),
+				"name",       context.getSessionValue("name"),
+				"headerName", context.getSessionValue("server")
 				));
 	}
 	

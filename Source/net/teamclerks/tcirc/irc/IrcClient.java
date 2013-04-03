@@ -167,7 +167,11 @@ public class IrcClient
 
 	  Map<String,String> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("message", action);
+	  data.put("action", ChatProcessor.toWebFriendlyString(action));
+	  data.put("sender", sender);
+	  data.put("login", login);
+	  data.put("hostname", hostname);
+	  data.put("target", target);
 	  
 	  this.log.debug("onAction call.");
 	  
@@ -191,6 +195,7 @@ public class IrcClient
 	  data.put("time", TIMESTAMP.format(new Date()));
 	  data.put("sender",  sender);
 	  data.put("channel", aChannel);
+	  data.put("hostname", hostname);
 	  data.put("users", new String[]{ sender });
 	  
 	  this.log.debug("onJoin call.");
@@ -236,6 +241,19 @@ public class IrcClient
   {
 	  super.onKick(aChannel, kickerNick, kickerLogin, kickerHostname, recipientNick,
 	      reason);
+	  
+	  Map<String,String> data = new HashMap<>();
+	  data.put("time", TIMESTAMP.format(new Date()));
+	  data.put("channel", aChannel);
+	  data.put("kickerNick", kickerNick);
+	  data.put("kickerLogin", kickerLogin);
+	  data.put("kickerHostname", kickerHostname);
+	  data.put("recipientNick", recipientNick);
+	  data.put("reason", StringHelper.emptyDefault(reason, "No reason"));
+	  
+	  this.log.debug("onKick call.");
+	  
+	  this.chatProcessor.sendJson("kick", data);
   }
 
 	@Override
@@ -246,8 +264,10 @@ public class IrcClient
 	  
 	  Map<String,String> data = new HashMap<>();
 	  data.put("time", TIMESTAMP.format(new Date()));
-	  data.put("reason", StringHelper.emptyDefault(reason, "No reason"));
 	  data.put("sourceNick", sourceNick);
+	  data.put("sourceLogin", sourceLogin);
+	  data.put("sourceHostname", sourceHostname);
+	  data.put("reason", StringHelper.emptyDefault(reason, "No reason"));
 	  
 	  this.log.debug("onPart call.");
 	  
