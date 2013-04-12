@@ -341,6 +341,10 @@ $(function(){
   // -------------------------------------------- //
 
   $.when( $.ajax("/api/chat/data") ).then( function(data) {
+    if (data.redirect) {
+      window.location = data.redirect;
+    }
+    
     tc.Templater.render(data, init);
   });
 }());

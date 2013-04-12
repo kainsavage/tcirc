@@ -12,6 +12,7 @@ import com.techempower.gemini.GeminiHelper;
 import com.techempower.gemini.annotation.URL;
 import com.techempower.gemini.websocket.ResinAdapter;
 import com.techempower.gemini.websocket.WebsocketAdapter;
+import com.techempower.helper.StringHelper;
 import com.techempower.log.ComponentLog;
 
 public class ChatHandler extends TCHandler
@@ -32,11 +33,21 @@ public class ChatHandler extends TCHandler
 	@URL("api/chat/data")
 	public boolean handleChatData(TCContext context)
 	{
+		String channel    = context.getSessionValue("channel"),
+				   server     = context.getSessionValue("server"),
+				   name       = context.getSessionValue("name"),
+				   headerName = context.getSessionValue("server");
+		
+		if (StringHelper.isEmpty(channel, server, name, headerName))
+		{
+			return GeminiHelper.sendJson(context, ImmutableMap.of("redirect", "/"));
+		}
+		
 		return GeminiHelper.sendJson(context, ImmutableMap.of(
-				"channel",    context.getSessionValue("channel"),
-				"server",     context.getSessionValue("server"),
-				"name",       context.getSessionValue("name"),
-				"headerName", context.getSessionValue("server")
+				"channel",    channel,
+				"server",     server,
+				"name",       name,
+				"headerName", headerName
 				));
 	}
 	
